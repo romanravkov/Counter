@@ -14,6 +14,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import {CONTAINER_PADDING_HORIZONTAL, NUMBER_HEIGHT} from './config';
 import Dot from './components/Dot';
 import Number from './components/Number';
+import Titles from './components/Titles';
 
 const data = [
   {
@@ -45,25 +46,7 @@ const data = [
 
 const Main = () => {
   const numbersScrollRef = useRef();
-  const [titlesWidth, setTitlesWidth] = useState(data.map(() => 0));
   const [mainOffsetY] = useState(new Animated.ValueXY({x: 0, y: 0}));
-
-  // ============================ //
-
-  const inputRange = data.map((_, i) => i * NUMBER_HEIGHT);
-  const outputRange = titlesWidth.map(
-    (el, i) =>
-      titlesWidth.reduce((acc, val, ind) => {
-        return ind < i ? acc - val : acc;
-      }, Dimensions.get('screen').width / 2 - CONTAINER_PADDING_HORIZONTAL) -
-      el / 2,
-  );
-  const translateTitles = mainOffsetY.y.interpolate({
-    inputRange: inputRange,
-    outputRange: outputRange,
-  });
-
-  // ============================ //
 
   const handleOnPressTitle = (index) => {
     numbersScrollRef.current.scrollToIndex({
@@ -125,39 +108,11 @@ const Main = () => {
               end={{x: 0.8, y: 0}}
               style={styles.titlesLeftGradient}
             />
-            <Animated.View
-              style={[
-                styles.titlesItemsContainer,
-                {
-                  transform: [
-                    {
-                      translateX: translateTitles,
-                    },
-                  ],
-                },
-              ]}>
-              {data.map((el, i) => {
-                return (
-                  <TouchableOpacity
-                    onLayout={(e) => {
-                      e.persist();
-                      if (e.nativeEvent) {
-                        setTitlesWidth((old) => {
-                          let newData = [...old];
-                          newData[i] = e.nativeEvent.layout.width;
-                          return newData;
-                        });
-                      }
-                    }}
-                    onPress={() => handleOnPressTitle(i)}
-                    key={el.id}
-                    style={styles.titleItem}>
-                    <Text style={styles.titleItemText}>{el.title}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </Animated.View>
-
+            <Titles
+              data={data}
+              mainOffsetY={mainOffsetY}
+              onPressTitle={handleOnPressTitle}
+            />
             <LinearGradient
               colors={[colors.bgOpacity, colors.bg]}
               start={{x: 0.2, y: 0}}
@@ -196,26 +151,10 @@ const styles = StyleSheet.create({
     height: NUMBER_HEIGHT,
   },
 
-  titlesItemsContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    overflow: 'visible',
-    justifyContent: 'flex-start',
-  },
   titlesWrapper: {
     flexDirection: 'row',
     justifyContent: 'center',
     overflow: 'hidden',
-  },
-  titleItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 14,
-  },
-  titleItemText: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '600',
   },
 
   dotsWrapper: {
